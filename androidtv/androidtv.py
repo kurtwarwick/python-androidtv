@@ -25,8 +25,8 @@ MODEL_REGEX_PATTERN = "product.model" + PROP_REGEX_PATTERN
 VERSION_REGEX_PATTERN = "version.release" + PROP_REGEX_PATTERN
 
 # ADB shell commands for getting the `screen_on`, `awake`, `wake_lock`, `audio_state`, and `current_app` properties
-CMD_AUDIO_STATE = r"dumpsys audio | grep -q paused && echo -e '1\c' || (dumpsys audio | grep -q started && echo '2\c' || echo '0\c')"
-
+# CMD_AUDIO_STATE = r"dumpsys audio | grep -q paused && echo -e '1\c' || (dumpsys audio | grep -q started && echo '2\c' || echo '0\c')"
+CMD_AUDIO_STATE = r"dumpsys audio | grep -Ei 'ID:[0-9]{1,5} \-\- type:android.media.AudioTrack' | grep -oP 'state:([^\s]+)' | sed -n -e 's/state://p'"
 
 class AndroidTV(BaseTV):
     """Representation of an Android TV device."""
@@ -172,9 +172,9 @@ class AndroidTV(BaseTV):
         output = self.adb_shell(CMD_AUDIO_STATE)
         if output is None:
             return None
-        if output == '1':
+        if output == 'paused':
             return constants.STATE_PAUSED
-        if output == '2':
+        if output == 'started':
             return constants.STATE_PLAYING
         return constants.STATE_IDLE
 
